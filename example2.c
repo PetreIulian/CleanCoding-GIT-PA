@@ -3,17 +3,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//Structura unui nod din lista de adiacenta
 typedef struct Node {
     int data;
     struct Node *next;
 } NODE;
 
+//Structura graf: nr de varfuri, vectori de vizitat, lista de adiacenta
 typedef struct Graph {
     int vertices;
     int *visited;
     struct Node **adjacency_lists;
 } GRAPH;
 
+//Creaza un nod nou
 NODE *create_node(int v) {
     NODE *new_node = malloc(sizeof(NODE));
     new_node->data = v;
@@ -22,6 +25,7 @@ NODE *create_node(int v) {
     return new_node;
 }
 
+//Creeaza un graf cu un nr dat de varfuri
 GRAPH *create_graph(int vertices) {
     GRAPH *graph = malloc(sizeof(GRAPH));
     graph->vertices = vertices;
@@ -37,6 +41,7 @@ GRAPH *create_graph(int vertices) {
     return graph;
 }
 
+//Adauga muchiile intre varfuri
 void add_edge(GRAPH *graph, int source, int destination) {
     NODE *new_node = create_node(destination);
 
@@ -47,6 +52,7 @@ void add_edge(GRAPH *graph, int source, int destination) {
     graph->adjacency_lists[destination] = new_node;
 }
 
+//Insereaza muchiile date de la tastatura
 int *insert_edge(int nr_of_vertices, int nr_of_edges, GRAPH *graph) {
   int source, destination;
   printf("Adauga %d muchii (de la 1 la %d)\n", nr_of_edges, nr_of_vertices);
@@ -57,10 +63,12 @@ int *insert_edge(int nr_of_vertices, int nr_of_edges, GRAPH *graph) {
   }
 }
 
+//Verifica daca coada este goala
 int is_empty(NODE *queue) {
     return queue == NULL;
 }
 
+//Adauga un nod la finalul cozii
 void enqueue(NODE **queue, int data) {
     NODE *new_node = create_node(data);
 
@@ -76,6 +84,7 @@ void enqueue(NODE **queue, int data) {
     }
 }
 
+//Scoate primul element din coada
 int dequeue(NODE **queue) {
     int data = (*queue)->data;
     NODE *temp = *queue;
@@ -86,6 +95,7 @@ int dequeue(NODE **queue) {
     return data;
 }
 
+//afiseaza lista de adiacenta a frafului
 void print_graph(GRAPH *graph) {
     int i;
     for (i = 0; i < graph->vertices; i++) {
@@ -98,6 +108,7 @@ void print_graph(GRAPH *graph) {
     }
 }
 
+//Afiseaza continutul cozii
 void print_queue(NODE *queue) {
     while (queue != NULL){
       printf("%d ", queue->data);
@@ -105,12 +116,14 @@ void print_queue(NODE *queue) {
     }
 }
 
+//Reseteaza vectorul de vizitare
 void wipe_visited_list(GRAPH *graph, int nr_of_vertices) {
     for (int i = 0; i < nr_of_vertices; i++) {
         graph->visited[i] = 0;
     }
 }
 
+//Functia de parcurgere in adancime
 void DFS(GRAPH *graph, int vertex_nr) {
     NODE *adj_list = graph->adjacency_lists[vertex_nr];
     NODE *temp = adj_list;
@@ -128,6 +141,7 @@ void DFS(GRAPH *graph, int vertex_nr) {
     }
 }
 
+//Functia de parcurgere in latime
 void BFS(GRAPH *graph, int start) {
     NODE *queue = NULL;
 
