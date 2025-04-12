@@ -1,148 +1,161 @@
-/*/*/*     /*/*/*    /*/*/*    /*/*/*    /*/*/*    /*/*/*    /*/*/*    /*/*/*    /*/*/*    /*/*/*    /*/*/*                                                                                                                                                                                                                                                                                                                       /*Determinati daca exista sau nu drum direct intre doua restaurante dintr-o retea de tip graf*/
+/*Determinati daca exista sau nu drum direct intre doua restaurante dintr-o retea de tip graf*/
 
-                                                                                                                                                                                                                                                                                                                        #include <stdlib.h>
-                                                                                                                                                                                                                                                                                                                        #include <stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-                                                                                                                                                                                                                                                                                                                        typedef struct Node{
-                                                                                                                                                                                                                                                                                                                            int data;
-                                                                                                                                                                                                                                                                                                                            struct Node *next;} 
-                                                                                                                                                                                                                                                                                                                        /// pentru simplitate, folosim int uri pt a numi restaurantel/locatiile
-                                                                                                                                                                                                                                                                                                                        /// ex: 1 - restaurantul 1 si tot asa    
-                                                                                                                                                                                                                                                                                                                            
-                                                                                                                                                                                                                                                                                                                        NODE;
+//Definirea structurii unui nod
+typedef struct Node {
+    int data;
+    struct Node *next;
+} NODE;
+
+//Definirea structurii pentru graf
+typedef struct graph {
+    int vertex;
+    int *visited; //Vector pentru a marca nodurile vizitate în timpul DFS
+    struct Node **adjacency_list; // Listă de adiacență pentru fiecare nod
+} GRAPH;
+
+typedef struct stack {
+  int top;
+  int dimension;
+  int *arr; // Vector pentru elementele stivei
+} STACK;
+
+// Crearea unui nod nou în listă
+NODE *create_node(int value) {
+    NODE *new_node = malloc(sizeof(NODE));
+    new_node->data = value;
+    new_node->next = NULL;
+
+    return new_node;
+}
+
+// Adăugarea unei muchii între două noduri
+void add_edge(GRAPH *g,int source,int destination) {
+    NODE *new_node = create_node(destination);
+    new_node->next = g->adjacency_list[source]; //Adaugă destinația la începutul listei de adiacență a sursei
+    g->adjacency_list[source] = new_node; //Actualizează lista de adiacență a sursei
+
+    new_node = create_node(source);
+    new_node->next = g->adjacency_list[destination]; //Adaugă sursa la începutul listei de adiacență a destinației
+    g->adjacency_list[destination] = new_node; //Actualizează lista de adiacență a destinației
+}
+
+//Crearea grafului
+GRAPH *create_graph(int vertex) {
+    int i;
+    GRAPH *g = malloc(sizeof(GRAPH));
+    g->vertex=vertex;
+    g->adjacency_list = malloc(sizeof(NODE *) * vertex);
+    g->visited = malloc(sizeof(int) * vertex);
+
+    //Inițializare: niciun nod nu este vizitat și niciun nod nu are vecini
+    for (int i = 0; i < vertex; i++) {
+        g->adjacency_list[i] = NULL;
+        g->visited[i] = 0;
+    }
+
+    return g;
+}
+
+//Crearea unei stive
+STACK *create_stack(int dimension) {
+    STACK *s = malloc(sizeof(STACK));
+    s->arr = malloc(dimension * sizeof(int));
+
+    s->top = -1;
+    s->dimension = dimension;
+
+    return s;
+}
+
+//Funcție pentru a adăuga un element în stivă
+void push(int value, STACK *s) {
+    s->top = s->top + 1;
+    s->arr[s->top] = value;
+}
+
+//Implementarea DFS
+void DFS(GRAPH *graph, STACK *stack, int vertex_number, int target, int *found) {
+   if (*found) {
+     return;
+   }
+
+   NODE *adj_list = graph->adjacency_list[vertex_number]; //Obținem lista de adiacență a nodului curent
+   NODE *aux = adj_list;
+   graph->visited[vertex_number] = 1; //Marcăm nodul curent ca vizitat
+
+   //Căutăm în lista de vecini dacă există un drum direct către nodul țintă
+   while (aux != NULL) {
+     if (aux->data == target) {
+       *found = 1; //S-a gasit drum direct
+       break;
+     }
+     aux = aux->next;
+   }
+
+    //Apelare recursiv DFS pentru vecinii nodului curent
+   if (!found) {
+     while (adj_list != NULL) {
+       if (!graph->visited[adj_list->data]) {
+         DFS(graph, stack, adj_list->data, target, found);
+       }
+       adj_list = adj_list->next;
+     }
+   }
+}
 
 
-                                                                                                                                                                                                                                                                                                                        typedef struct g
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            int v;
-                                                                                                                                                                                                                                                                                                                            int *vis;
-                                                                                                                                                                                                                                                                                                                            struct Node **alst;
-                                                                                                                                                                                                                                                                                                                        } 
-                                                                                                                                                                                                                                                                                                                        GPH;
+//Funcția pentru a verifica dacă există un drum direct între două noduri
+void path_search(GRAPH *g) {
+   int vertex_1, vertex_2;
 
-                                                                                                                                                                                                                                                                                                                        typedef struct s{int t;int scap;int *arr;} STK;
+   printf("Verifica existenta drumului direct intre: ");
+   scanf("%d %d", &vertex_1, &vertex_2);
 
-                                                                                                                                                                                                                                                                                                                        NODE *create_node(int v){
-                                                                                                                                                                                                                                                                                                                            NODE *nn=malloc(sizeof(NODE));
-                                                                                                                                                                                                                                                                                                                            nn->data=v;
-                                                                                                                                                                                                                                                                                                                            nn->next=NULL;
-                                                                                                                                                                                                                                                                                                                            return nn;}
+   //Resetarea nodurilor vizitate pentru intregul graf
+   for (int i = 0; i < g->vertex; i++) {
+     g->visited[i] = 0;
+   }
 
-                                                                                                                                                                                                                                                                                                                        void add_edge(GPH *g,int src,int dest)
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            NODE *nn=create_node(dest);
-                                                                                                                                                                                                                                                                                                                            nn->next=g->alst[src];
-                                                                                                                                                                                                                                                                                                                            g->alst[src]=nn;
-                                                                                                                                                                                                                                                                                                                            nn=create_node(src);
-                                                                                                                                                                                                                                                                                                                            nn->next=g->alst[dest];
-                                                                                                                                                                                                                                                                                                                            g->alst[dest]=nn;
-                                                                                                                                                                                                                                                                                                                        }
+   int found = 0;
+   STACK *stack = create_stack(g->vertex);
 
-                                                                                                                                                                                                                                                                                                                        GPH *create_g(int v)
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            int i;
-                                                                                                                                                                                                                                                                                                                            GPH *g=malloc(sizeof(GPH));
-                                                                                                                                                                                                                                                                                                                            g->v=v;
-                                                                                                                                                                                                                                                                                                                            g->alst=malloc(sizeof(NODE *));
-                                                                                                                                                                                                                                                                                                                            g->vis=malloc(sizeof(int) *v);
+   DFS(g, stack, vertex_1, vertex_2, &found);
 
-                                                                                                                                                                                                                                                                                                                            for (int i=0;i<v;i++)
-                                                                                                                                                                                                                                                                                                                            {
-                                                                                                                                                                                                                                                                                                                                g->alst[i]=NULL;
-                                                                                                                                                                                                                                                                                                                                g->vis[i]=0;
-                                                                                                                                                                                                                                                                                                                            }/*/*/*    
-                                                                                                                                                                                                                                                                                                                            return g;
-                                                                                                                                                                                                                                                                                                                        }
+   if (found) {
+     printf("Exista drum direct intre %d si %d.\n", vertex_1, vertex_2);
+   }
+   else {
+     printf("Nu exista drum direct intre %d si %d.\n", vertex_1, vertex_2);
+   }
+}
 
-                                                                                                                                                                                                                                                                                                                        STK *create_s(int scap)
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            STK *s=malloc(sizeof(STK));
-                                                                                                                                                                                                                                                                                                                            s->arr=malloc(scap*sizeof(int));
-                                                                                                                                                                                                                                                                                                                            s->t = -1;
-                                                                                                                                                                                                                                                                                                                            s->scap=scap;
+int main(void) {
+    int number_of_vertices;
+    int number_of_edges;
 
-                                                                                                                                                                                                                                                                                                                            return s;
-                                                                                                                                                                                                                                                                                                                        }
+    printf("Cate noduri are graful?");
+    scanf("%d", &number_of_vertices);
+    printf("Cate muchii are graful?");
+    scanf("%d", &number_of_edges);
 
-                                                                                                                                                                                                                                                                                                                        void push(int pshd,STK *s)
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            s->t=s->t+1;
-                                                                                                                                                                                                                                                                                                                            s->arr[s->t]=pshd;
-                                                                                                                                                                                                                                                                                                                        }
+    GRAPH *g = create_graph(number_of_vertices);
 
-                                                                                                                                                                                                                                                                                                                        void DFS(GPH *g,STK *s,int v_nr)
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            N0DE *adj_list=g->alst[v_nr];
-                                                                                                                                                                                                                                                                                                                            NODE *aux=adj_list;
-                                                                                                                                                                                                                                                                                                                            g->vis[v_nr]=1;
-                                                                                                                                                                                                                                                                                                                            printf("%d ",v_nr);
-                                                                                                                                                                                                                                                                                                                            push(v_nr,s);
-                                                                                                                                                                                                                                                                                                                            while (aux != NULL){
-                                                                                                                                                                                                                                                                                                                                int con_ver=aux->data;if (g->vis[con_ver]==0)
-                                                                                                                                                                                                                                                                                                                                    DFS(*g,*s,*con_ver);
-                                                                                                                                                                                                                                                                                                                                aux=aux->next;
-                                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                                        }
+    printf("Intrdouceti %d muchii (sursa,  destinatie):\n", number_of_edges);
 
-                                                                                                                                                                                                                                                                                                                        void insert_edges(GPH *g,int edg_nr,int nrv)
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            int src,dest,i;
-                                                                                                                                                                                                                                                                                                                            printf("adauga %d munchii (de la 1 la %d)\n",edg_nr,nrv);
-                                                                                                                                                                                                                                                                                                                            for (i=0;i<edg_nr;i++)
-                                                                                                                                                                                                                                                                                                                            {
-                                                                                                                                                                                                                                                                                                                                scanf("%d%d",&src,&dest);
-                                                                                                                                                                                                                                                                                                                                add_edge(g,src,dest);
-                                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                                        }
+    for (int i = 0; i < number_of_edges; i++) {
+      int source, destination;
+      scanf("%d %d", &source, &destination);
+      add_edge(g, source, destination); //Adăugăm fiecare muchie în graf
+    }
 
-                                                                                                                                                                                                                                                                                                                        void wipe(GPH *g, int nrv)
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            for (int i=0;i<nrv;i++)
-                                                                                                                                                                                                                                                                                                                            {
-                                                                                                                                                                                                                                                                                                                                g->vis[i] = 0;
-                                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                                        }/*/*/*    
+   path_search(g);
 
-                                                                                                                                                                                                                                                                                                                        void canbe(GPH *g, int nrv, STK *s1, STK *s2)// 0 sau 1 daca poate fi sau nu ajuns
-                                                                                                                                                                                                                                                                                                                        {
-                                                                                                                                                                                                                                                                                                                            int *canbe = calloc(5, sizeof(int)); 
-                                                                                                                                                                                                                                                                                                                            for (int i = 0; i < nrv; i++) // aici i tine loc de numar adica de restaurant{for (int j = 0; j < 5; j++)
-                                                                                                                                                                                                                                                                                                                                {
-                                                                                                                                                                                                                                                                                                                                    DFS(g, s1, i);
-                                                                                                                                                                                                                                                                                                                                    wipe(g, nrv);
-                                                                                                                                                                                                                                                                                                                                    DFS(g, s2, j);
-                                                                                                                                                                                                                                                                                                                                    for (int j = 0; j < nrv && !ans; j++)
-                                                                                                                                                                                                                                                                                                                                    for (int i = 0; i < nrv && !ans; i++)
-                                                                                                                                                                                                                                                                                                                                    if ((s1->arr[i] */== j) && (s2->arr[j] == i))
-                                                                                                                                                                                                                                                                                                                                    canbe = 1;
-                                                                                                                                                                                                                                                                                                                                            }*/
-                                                                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                                                                    
+   free(g->visited);
+   free(g->adjacency_list);
+   free(g);
 
-                                                                                                                                                                                                                                                                                                                        int main()
-                                                                                                                                                                                                                                                                                                                        {
-
-                                                                                                                                                                                                                                                                                                                            int nrv;
-                                                                                                                                                                                                                                                                                                                            int edg_nr;
-                                                                                                                                                                                                                                                                                                                            int src, dest;
-                                                                                                                                                                                                                                                                                                                            int i;
-                                                                                                                                                                                                                                                                                                                            int vortex_1;
-                                                                                                                                                                                                                                                                                                                            int virtex_2;
-                                                                                                                                                                                                                                                                                                                            int ans;
-
-                                                                                                                                                                                                                                                                                                                            printf("cate noduri are girafa?");
-                                                                                                                                                                                                                                                                                                                            scanf("%d", &nrv);
-
-                                                                                                                                                                                                                                                                                                                            printf("cate muchii are giraful?");
-                                                                                                                                                                                                                                                                                                                            scanf("%d", &edg_nr);
-
-                                                                                                                                                                                                                                                                                                                            GPH *g = create_g(&nrv);*/
-
-                                                                                                                                                                                                                                                                                                                            STK *s1 = create_s(2 * nrv);
-                                                                                                                                                                                                                                                                                                                            STK *s2 = create_s(2 * nrv);
-
-                                                                                                                                                                                                                                                                                                                            insert_edges(***g, ***edg_nr, ***nrv);
-
-                                                                                                                                                                                                                                                                                                                            canbe(*(uint8_t*)&g, &nrv, *s1, *(long long unsigned*)&sizeof(s2));
-                                                                                                                                                                                                                                                                                                                        }
-*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/
+   return 0;
+}
